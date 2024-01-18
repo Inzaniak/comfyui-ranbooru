@@ -2,8 +2,15 @@ import requests
 import random
 from typing import Literal
 import os
+import torch
+import numpy as np
+from PIL import Image
+import io
 
 POST_AMOUNT = 100
+
+def pil2tensor(image):
+    return torch.from_numpy(np.array(image).astype(np.float32) / 255.0).unsqueeze(0)
 
 class Booru():
     
@@ -224,6 +231,8 @@ RATINGS = {
 class Ranbooru:    
     def __init__(self):
         self.last_prompt = ''
+        self.file_url = ''
+        self.image = None
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -235,18 +244,19 @@ class Ranbooru:
                     "max_tags": ("INT", {"default": 100, "min": 1, "max": 100}),
                     "rating": (["All","Safe","Questionable","Explicit"], {"default": "All"}),
                     "change_color": (["Default","Colored","Limited Palette","Monochrome"], {"default": "Default"}),
-                    "use_last_prompt": (["True","False"], {"default": "True"})
+                    "use_last_prompt": ("BOOLEAN", {"default": False}),
+                    "return_picture": ("BOOLEAN", {"default": False})
                     }
                 }
 
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ("STRING","IMAGE",)
     FUNCTION = "ranbooru"
     CATEGORY = "Ranbooru Nodes"
     
     def IS_CHANGED(self, **kwargs):
         return float('nan')
 
-    def ranbooru(self, booru, tags, remove_tags, max_tags, rating, change_color, use_last_prompt):
+    def ranbooru(self, booru, tags, remove_tags, max_tags, rating, change_color, use_last_prompt, return_picture):
 
         booru_apis = {
                 'gelbooru': Gelbooru(),
@@ -268,8 +278,9 @@ class Ranbooru:
         api_url = ''
         random_post = {'preview_url':''}
         data = {'post': [{'tags': ''}]}
-        if use_last_prompt == 'True' and self.last_prompt != '':
+        if use_last_prompt and self.last_prompt != '':
             final_tags = self.last_prompt
+            img_url = self.file_url
         else:
             api_url = booru_apis.get(booru, Gelbooru())
             
@@ -299,8 +310,26 @@ class Ranbooru:
                 if '*' in bad_tag:
                     final_tags = ','.join([tag for tag in final_tags.split(',') if bad_tag.replace('*','') not in tag])  
             self.last_prompt = final_tags
+            self.file_url = random_post['file_url']
         
-        return (final_tags,)        
+        if return_picture:
+            if use_last_prompt:
+                if self.file_url == img_url and self.image != None:
+                    img = self.image
+            else:
+                img_url = random_post['file_url']
+                res = requests.get(img_url)
+                #read the image in PIL
+                img = Image.open(io.BytesIO(res.content))
+                # rgb
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                self.file_url = img_url
+                self.image = img
+            return (final_tags, pil2tensor(img),)
+        else:                
+            empty_image = Image.new('RGB', (1, 1), color = (0, 0, 0))
+            return (final_tags, pil2tensor(empty_image),)        
     
 class RandomPicturePath:
     # given a path, return a random picture (png,jpg,jpeg) from that path as a string

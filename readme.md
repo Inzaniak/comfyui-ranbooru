@@ -18,6 +18,7 @@ Parameters:
 - **rating**: The mature rating of the picture.
 - **change_color**: Change this if you want a colored or a black and white picture.
 - **use_last_prompt**: If you want to use the last prompt as the tags.
+- **return_picture**: If you want to return the picture as well.
 
 ### Random Picture Path
 This node will get a random picture from a specific path.
