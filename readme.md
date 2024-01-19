@@ -1,7 +1,7 @@
 # Ranbooru for ComfyUI
-![Alt text](pics/ranbooru.png)
+![Alt text](assets/pics/ranbooru.png)
 Ranbooru is an extension for the [comfyUI](https://github.com/comfyanonymous/ComfyUI). The purpose of this extension is to add a node that gets a random set of tags from boorus pictures. This is mostly being used to help me test my checkpoints on a large variety of tags.
-![Alt text](pics/image.png)
+![Alt text](assets/pics/image.png)
 
 ## Installation
 Just clone this repository into the custom_nodes folder of ComfyUI. Restart ComfyUI and the extension should be loaded.
@@ -34,7 +34,7 @@ If you found an issue with the extension, please report it in the issues section
 
 ---
 ## Made by Inzaniak
-![Alt text](pics/logo.png) 
+![Alt text](assets/pics/logo.png) 
 
 
 If you'd like to support my work feel free to check out my Patreon: https://www.patreon.com/Inzaniak
