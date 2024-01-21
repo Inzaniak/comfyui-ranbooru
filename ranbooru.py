@@ -205,6 +205,7 @@ RATING_TYPES = {
     "full": {
         "All": "All",
         "Safe": "safe",
+        "Sensitive": "questionable",
         "Questionable": "questionable",
         "Explicit": "explicit"
     },
@@ -242,7 +243,7 @@ class Ranbooru:
                     "tags": ("STRING", {"multiline": False, "default": ""}),
                     "remove_tags": ("STRING", {"multiline": False, "default": ""}),
                     "max_tags": ("INT", {"default": 100, "min": 1, "max": 100}),
-                    "rating": (["All","Safe","Questionable","Explicit"], {"default": "All"}),
+                    "rating": (["All","Safe","Sensitive","Questionable","Explicit"], {"default": "All"}),
                     "change_color": (["Default","Colored","Limited Palette","Monochrome"], {"default": "Default"}),
                     "use_last_prompt": ("BOOLEAN", {"default": False}),
                     "return_picture": ("BOOLEAN", {"default": False})
