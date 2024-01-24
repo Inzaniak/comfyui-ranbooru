@@ -242,7 +242,6 @@ class Ranbooru:
                     "booru": (BOORUS, {"default": "gelbooru"}),
                     "tags": ("STRING", {"multiline": False, "default": ""}),
                     "remove_tags": ("STRING", {"multiline": False, "default": ""}),
-                    "max_tags": ("INT", {"default": 100, "min": 1, "max": 100}),
                     "rating": (["All","Safe","Sensitive","Questionable","Explicit"], {"default": "All"}),
                     "change_color": (["Default","Colored","Limited Palette","Monochrome"], {"default": "Default"}),
                     "use_last_prompt": ("BOOLEAN", {"default": False}),
@@ -257,7 +256,7 @@ class Ranbooru:
     def IS_CHANGED(self, **kwargs):
         return float('nan')
 
-    def ranbooru(self, booru, tags, remove_tags, max_tags, rating, change_color, use_last_prompt, return_picture):
+    def ranbooru(self, booru, tags, remove_tags, rating, change_color, use_last_prompt, return_picture):
 
         booru_apis = {
                 'gelbooru': Gelbooru(),
@@ -298,8 +297,6 @@ class Ranbooru:
             clean_tags = random_post['tags'].replace('(','\(').replace(')','\)')
             temp_tags = clean_tags.split(' ')
             temp_tags = random.sample(temp_tags, len(temp_tags))
-            if max_tags > 0:
-                temp_tags = temp_tags[:max_tags]
             if change_color == 'Colored':
                 bad_tags.extend(BW_BG)
             elif change_color == 'Limited Palette':
@@ -335,13 +332,14 @@ class Ranbooru:
 class RandomPicturePath:
     # given a path, return a random picture (png,jpg,jpeg) from that path as a string
     def __init__(self):
-        pass
+        self.last_path = ''
     
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {
                     "path": ("STRING", {"multiline": False, "default": ""}),
                     "parse_subfolders": (["True","False"], {"default": "True"}),
+                    "use_last": ("BOOLEAN", {"default": False}),
                     }
                 }
     
@@ -352,27 +350,91 @@ class RandomPicturePath:
     def IS_CHANGED(self, **kwargs):
         return float('nan')
     
-    def random_picture_path(self, path, parse_subfolders):
-        files = []
-        if parse_subfolders == 'True':
-            for root, dirs, filenames in os.walk(path):
-                for filename in filenames:
-                    if filename.endswith(('.png', '.jpg', '.jpeg')):
-                        files.append(os.path.join(root, filename))
+    def random_picture_path(self, path, parse_subfolders, use_last):
+        if use_last and self.last_path != '':
+            return (self.last_path,)
         else:
-            files = [os.path.join(path, file) for file in os.listdir(path) if file.endswith(('.png', '.jpg', '.jpeg'))]
-        
-        return (random.choice(files),)
+            files = []
+            if parse_subfolders == 'True':
+                for root, dirs, filenames in os.walk(path):
+                    for filename in filenames:
+                        if filename.endswith(('.png', '.jpg', '.jpeg')):
+                            files.append(os.path.join(root, filename))
+            else:
+                files = [os.path.join(path, file) for file in os.listdir(path) if file.endswith(('.png', '.jpg', '.jpeg'))]
+            random_file = random.choice(files)
+            self.last_path = random_file
+            return (random_file,)
     
+class PromptMix:
+    def __init__(self):
+        self.last_prompt = ''
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "prompt": ("STRING", {"multiline": False, "default": ""}),
+                    "delimiter": ("STRING", {"multiline": False, "default": ","}),
+                    "mix_type": (["Off","Mix","Inverse"], {"default": "Off"}),
+                    "use_last": ("BOOLEAN", {"default": False}),
+                    }
+                }
+    
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "prompt_mix"
+    CATEGORY = "Ranbooru Nodes"
+
+    def prompt_mix(self, prompt, delimiter, mix_type, use_last):
+        """Split the string by delimiter and mixes the order of the words"""
+        if use_last and self.last_prompt != '':
+            return (self.last_prompt,)
+        else:
+            words = prompt.split(delimiter)
+            if mix_type == 'Mix':
+                random.shuffle(words)
+            elif mix_type == 'Inverse':
+                words.reverse()
+            self.last_prompt = delimiter.join(words)
+            return (self.last_prompt,)
+        
+class PromptLimit:
+    def __init__(self):
+        pass
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "prompt": ("STRING", {}),
+                    "separator": ("STRING", {"default": ","}),
+                    "limit": ("INT", {"default": 0, "min": 0, "max": 100}),
+                    }
+                }
+        
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "prompt_limit"
+    CATEGORY = "Ranbooru Nodes"
+    
+    def prompt_limit(self, prompt, separator, limit):
+        """Split the string by separator and limit the amount of words"""
+        words = prompt.split(separator)
+        if limit > 0:
+            words = words[:limit]
+        return (separator.join(words),)
+        
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
     "Ranbooru": Ranbooru,
-    "RandomPicturePath": RandomPicturePath
+    "RandomPicturePath": RandomPicturePath,
+    "PromptMix": PromptMix,
+    "PromptLimit": PromptLimit
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
 NODE_DISPLAY_NAME_MAPPINGS = {
     "Ranbooru": "Ranbooru",
-    "RandomPicturePath": "Random Picture Path"
+    "RandomPicturePath": "Random Picture Path",
+    "PromptMix": "Prompt Mix",
+    "PromptLimit": "Prompt Limit"
 }
