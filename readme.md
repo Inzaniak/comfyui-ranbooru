@@ -14,7 +14,7 @@ Parameters:
 - **Booru**: The booru to get the tags from.
 - **Tags**: The tags to search for.
 - **remove_tags**: The tags to remove from the search.
-- **max_tags**: The maximum amount of tags to get.
+- ~~**max_tags**: The maximum amount of tags to get.~~ replaced as a new node
 - **rating**: The mature rating of the picture.
 - **change_color**: Change this if you want a colored or a black and white picture.
 - **use_last_prompt**: If you want to use the last prompt as the tags.
@@ -24,6 +24,20 @@ Parameters:
 This node will get a random picture from a specific path.
 - **path**: The path to get the picture from.
 - **include_subfolders**: If you want to include subfolders in the search.
+
+### PromptMix
+
+The `PromptMix` function is used to mix the words in a given prompt. It supports three types of mixing: 'Shuffle', 'Reverse', and 'Inverse'. The type of mix is determined by the `mix_type` parameter.
+- `prompt`: A string that represents the prompt to be mixed.
+- `delimiter`: A string that represents the delimiter used to split the prompt into words.
+- `mix_type`: A string that represents the type of mix to be applied. It can be 'Shuffle', 'Reverse', or 'Inverse'.
+
+### PromptLimit
+
+The `PromptLimit` function is used to limit the number of words in a given prompt. The number of words is determined by the `limit` parameter.
+- `prompt`: A string that represents the prompt to be limited.
+- `separator`: A string that represents the separator used to split the prompt into words.
+- `limit`: An integer that represents the maximum number of words allowed in the prompt.
 
 ## Found an issue?  
 If you found an issue with the extension, please report it in the issues section of this repository.  
