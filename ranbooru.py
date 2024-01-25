@@ -420,7 +420,46 @@ class PromptLimit:
         if limit > 0:
             words = words[:limit]
         return (separator.join(words),)
+
+class PromptRandomWeight:
+    def __init__(self):
+        pass
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "prompt": ("STRING", {}),
+                    "separator": ("STRING", {"default": ","}),
+                    "min_weight_value": ("FLOAT", {"default": 0.0, "min": -5.0, "max": 5.0}),
+                    "max_weight_value": ("FLOAT", {"default": 1.0, "min": -5.0, "max": 5.0}),
+                    "max_weight_tags": ("INT", {"default": 1, "min": 1, "max": 100}),
+                    "order": (["Random","Ordered"], {"default": "Random"}),
+                    }
+                }
         
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "prompt_random_weight"
+    CATEGORY = "Ranbooru Nodes"
+    
+    def prompt_random_weight(self, prompt, separator, min_weight_value, max_weight_value, max_weight_tags, order):
+        """Split the string by separator and randomly add (word:weight) to tags contained in the list based on the max_weight_value to a max of max_weight_tags
+        If the weight is above 1 than the value should be between 1 and max_weight_value, otherwise it should be between max_weight_value and 1
+        Check if the max_weight_tags is less than the amount of words in the prompt
+        """
+        words = prompt.split(separator)
+        if max_weight_tags > len(words):
+            max_weight_tags = len(words)
+        if order == 'Random':
+            # apply weights to random words in the list
+            # these should not be always the first words
+            random_words = random.sample(words, max_weight_tags)
+            for i in range(max_weight_tags):
+                words[words.index(random_words[i])] = f"({words[words.index(random_words[i])]}:{round(random.uniform(min_weight_value,max_weight_value),1)})"
+        else:
+            for i in range(max_weight_tags):
+                words[i] = f"({words[i]}:{round(random.uniform(min_weight_value,max_weight_value),1)})"
+        return (separator.join(words),)
+            
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -428,7 +467,8 @@ NODE_CLASS_MAPPINGS = {
     "Ranbooru": Ranbooru,
     "RandomPicturePath": RandomPicturePath,
     "PromptMix": PromptMix,
-    "PromptLimit": PromptLimit
+    "PromptLimit": PromptLimit,
+    "PromptRandomWeight": PromptRandomWeight
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -436,5 +476,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "Ranbooru": "Ranbooru",
     "RandomPicturePath": "Random Picture Path",
     "PromptMix": "Prompt Mix",
-    "PromptLimit": "Prompt Limit"
+    "PromptLimit": "Prompt Limit",
+    "PromptRandomWeight": "Prompt Random Weight"
 }

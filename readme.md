@@ -38,6 +38,15 @@ The `PromptLimit` function is used to limit the number of words in a given promp
 - `prompt`: A string that represents the prompt to be limited.
 - `separator`: A string that represents the separator used to split the prompt into words.
 - `limit`: An integer that represents the maximum number of words allowed in the prompt.
+ 
+### PromptRandomWeight
+The `PromptRandomWeight` function is used to randomly select one or more words from a given prompt and give them a random weight based on a user-defined range. The number of words to be selected is determined by the `num_words` parameter.
+- `prompt`: A string that represents the prompt to be weighted.
+- `separator`: A string that represents the separator used to split the prompt into words.
+- `min_weight_value`: A float that represents the minimum weight value allowed.
+- `max_weight_value`: A float that represents the maximum weight value allowed.
+- `max_weight_tags`: An integer that represents the number of words to be selected.
+- `order`: A string that represents the order in which the words will be selected. It can be 'random' or 'ordered'.
 
 ## Found an issue?  
 If you found an issue with the extension, please report it in the issues section of this repository.  
