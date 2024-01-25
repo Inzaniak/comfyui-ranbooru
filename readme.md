@@ -48,6 +48,12 @@ The `PromptRandomWeight` function is used to randomly select one or more words f
 - `max_weight_tags`: An integer that represents the number of words to be selected.
 - `order`: A string that represents the order in which the words will be selected. It can be 'random' or 'ordered'.
 
+### PromptBackground
+The `PromptBackground` function is used to add a background context to a given prompt. 
+- `prompt`: A string that represents the prompt to be given a background context.
+- `background`: A string that represents the background context to be added to the prompt.
+
+
 ## Found an issue?  
 If you found an issue with the extension, please report it in the issues section of this repository.  
 

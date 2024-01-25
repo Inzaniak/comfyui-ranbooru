@@ -459,7 +459,53 @@ class PromptRandomWeight:
             for i in range(max_weight_tags):
                 words[i] = f"({words[i]}:{round(random.uniform(min_weight_value,max_weight_value),1)})"
         return (separator.join(words),)
-            
+
+class PromptBackground:   
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "prompt": ("STRING", {}),
+                    "background_type": (["colored","b&w","remove"], {"default": "remove"}),
+                    }
+                }
+        
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "prompt_background"
+    CATEGORY = "Ranbooru Nodes"
+               
+    def prompt_background(self, prompt, background_type):
+        COLORED_BG = ['black_background', 'aqua_background', 'white_background', 'colored_background',
+                    'blue_background', 'green_background', 'red_background',
+                    'brown_background', 'purple_background', 'yellow_background', 'orange_background',
+                    'pink_background', 'two-tone_background', 'grey_background']
+        BW_BG = ['monochrome', 'greyscale', 'grayscale']
+        
+        # Merge all background tags
+        ALL_BG_TAGS = COLORED_BG + BW_BG
+        
+        # Split prompt in tags
+        tags = prompt.split(',')
+        
+        if background_type == 'remove':
+            # Remove all background tags
+            tags = [tag.strip() for tag in tags if tag.strip() not in ALL_BG_TAGS]
+        elif background_type == 'colored':
+            # Remove all black and white tags
+            tags = [tag.strip() for tag in tags if tag.strip() not in BW_BG]
+            # Add a random colored background tag
+            tags.append(random.choice(COLORED_BG))
+        elif background_type == 'b&w':
+            # Remove all colored tags
+            tags = [tag.strip() for tag in tags if tag.strip() not in COLORED_BG]
+            # Add all black and white tags
+            tags.extend(BW_BG)
+        
+        # Ricomponi i tag nel prompt
+        final_prompt = ', '.join(tags)
+        
+        return (final_prompt,)
+    
+    
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -468,7 +514,8 @@ NODE_CLASS_MAPPINGS = {
     "RandomPicturePath": RandomPicturePath,
     "PromptMix": PromptMix,
     "PromptLimit": PromptLimit,
-    "PromptRandomWeight": PromptRandomWeight
+    "PromptRandomWeight": PromptRandomWeight,
+    "PromptBackground": PromptBackground,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -477,5 +524,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "RandomPicturePath": "Random Picture Path",
     "PromptMix": "Prompt Mix",
     "PromptLimit": "Prompt Limit",
-    "PromptRandomWeight": "Prompt Random Weight"
+    "PromptRandomWeight": "Prompt Random Weight",
+    "PromptBackground": "Prompt Background",
 }
