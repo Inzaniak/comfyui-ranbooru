@@ -6,6 +6,7 @@ import torch
 import numpy as np
 from PIL import Image
 import io
+import re
 
 POST_AMOUNT = 100
 
@@ -195,6 +196,7 @@ class e621(Booru):
         self.get_data(add_tags, max_pages, "&id="+id)
 
 BOORUS = ['gelbooru', 'rule34', 'safebooru', 'danbooru', 'konachan', 'yande.re', 'aibooru', 'xbooru', 'e621']
+BOORUS_URL = ['gelbooru', 'rule34', 'safebooru', 'yande.re', 'aibooru', 'xbooru']
 COLORED_BG = ['black_background','aqua_background','white_background','colored_background','gray_background','blue_background','green_background','red_background','brown_background','purple_background','yellow_background','orange_background','pink_background','plain','transparent_background','simple_background','two-tone_background','grey_background']
 BW_BG = ['monochrome','greyscale','grayscale']
 
@@ -241,7 +243,6 @@ class Ranbooru:
         return {"required": {       
                     "booru": (BOORUS, {"default": "gelbooru"}),
                     "tags": ("STRING", {"multiline": False, "default": ""}),
-                    "remove_tags": ("STRING", {"multiline": False, "default": ""}),
                     "rating": (["All","Safe","Sensitive","Questionable","Explicit"], {"default": "All"}),
                     "change_color": (["Default","Colored","Limited Palette","Monochrome"], {"default": "Default"}),
                     "use_last_prompt": ("BOOLEAN", {"default": False}),
@@ -256,7 +257,7 @@ class Ranbooru:
     def IS_CHANGED(self, **kwargs):
         return float('nan')
 
-    def ranbooru(self, booru, tags, remove_tags, rating, change_color, use_last_prompt, return_picture):
+    def ranbooru(self, booru, tags, rating, change_color, use_last_prompt, return_picture):
 
         booru_apis = {
                 'gelbooru': Gelbooru(),
@@ -270,10 +271,6 @@ class Ranbooru:
                 'e621': e621(),
             }
         bad_tags = ['mixed-language_text','watermark','text','english_text','speech_bubble','signature','artist_name','censored','bar_censor','translation','twitter_username',"twitter_logo",'patreon_username','commentary_request','tagme','commentary','character_name','mosaic_censoring','instagram_username','text_focus','english_commentary','comic','translation_request','fake_text','translated','paid_reward_available','thought_bubble','multiple_views','silent_comic','out-of-frame_censoring','symbol-only_commentary','3koma','2koma','character_watermark','spoken_question_mark','japanese_text','spanish_text','language_text','fanbox_username','commission','original','ai_generated','stable_diffusion','tagme_(artist)','text_bubble','qr_code','chinese_commentary','korean_text','partial_commentary','chinese_text','copyright_request','heart_censor','censored_nipples','page_number','scan','fake_magazine_cover','korean_commentary']
-        if ',' in remove_tags:
-            bad_tags.extend(remove_tags.split(','))
-        else:
-            bad_tags.append(remove_tags)
         
         api_url = ''
         random_post = {'preview_url':''}
@@ -304,9 +301,6 @@ class Ranbooru:
             elif change_color == 'Monochrome':
                 temp_tags.extend(BW_BG)
             final_tags = ','.join([tag for tag in temp_tags if tag not in bad_tags])
-            for bad_tag in bad_tags:
-                if '*' in bad_tag:
-                    final_tags = ','.join([tag for tag in final_tags.split(',') if bad_tag.replace('*','') not in tag])  
             self.last_prompt = final_tags
             self.file_url = random_post['file_url']
         
@@ -328,6 +322,112 @@ class Ranbooru:
         else:                
             empty_image = Image.new('RGB', (1, 1), color = (0, 0, 0))
             return (final_tags, pil2tensor(empty_image),)        
+    
+class RanbooruURL:
+    """Uses an url or an ID to get a post from a booru"""
+    def __init__(self):
+        self.last_prompt = ''
+        self.file_url = ''
+        self.image = None
+        
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "booru": (BOORUS_URL, {"default": "gelbooru"}),
+                    "url": ("STRING", {"multiline": False, "default": ""}),
+                    "return_picture": ("BOOLEAN", {"default": False})
+                    }
+                }
+    
+    RETURN_TYPES = ("STRING","IMAGE",)
+    FUNCTION = "ranbooru_url"
+    CATEGORY = "Ranbooru Nodes"
+
+    def ranbooru_url(self, booru, url, return_picture):
+        booru_apis = {
+                'gelbooru': Gelbooru(),
+                'rule34': Rule34(),
+                'safebooru': Safebooru(),
+                'yande.re': Yandere(),
+                'aibooru': AIBooru(),
+                'xbooru': XBooru(),
+            }
+        
+        bad_tags = ['mixed-language_text','watermark','text','english_text','speech_bubble','signature','artist_name','censored','bar_censor','translation','twitter_username',"twitter_logo",'patreon_username','commentary_request','tagme','commentary','character_name','mosaic_censoring','instagram_username','text_focus','english_commentary','comic','translation_request','fake_text','translated','paid_reward_available','thought_bubble','multiple_views','silent_comic','out-of-frame_censoring','symbol-only_commentary','3koma','2koma','character_watermark','spoken_question_mark','japanese_text','spanish_text','language_text','fanbox_username','commission','original','ai_generated','stable_diffusion','tagme_(artist)','text_bubble','qr_code','chinese_commentary','korean_text','partial_commentary','chinese_text','copyright_request','heart_censor','censored_nipples','page_number','scan','fake_magazine_cover','korean_commentary']
+        
+        api_url = ''
+        random_post = {'preview_url':''}
+        data = {'post': [{'tags': ''}]}
+        api_url = booru_apis.get(booru, Gelbooru())
+        
+        #check if the id is a number otherwise it's an url
+        if url.isdigit():
+            add_tags = f'&id={url}'
+        else:
+            # extract the id from the url
+            # use regex to find the number after id=
+            id = re.search('id=(\d+)', url)
+            if id:
+                add_tags = f'&id={id.group(1)}'
+            else:
+                raise Exception("Invalid URL")
+
+        data = api_url.get_data(add_tags, 100)
+        random_post = data['post'][0]
+        clean_tags = random_post['tags'].replace('(','\(').replace(')','\)')
+        temp_tags = clean_tags.split(' ')
+        temp_tags = random.sample(temp_tags, len(temp_tags))
+        final_tags = ','.join([tag for tag in temp_tags if tag not in bad_tags])
+        self.last_prompt = final_tags
+        self.file_url = random_post['file_url']
+        
+        if return_picture:
+            img_url = random_post['file_url']
+            res = requests.get(img_url)
+            #read the image in PIL
+            img = Image.open(io.BytesIO(res.content))
+            # rgb
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            self.file_url = img_url
+            self.image = img
+            return (final_tags, pil2tensor(img),)
+        else:                
+            empty_image = Image.new('RGB', (1, 1), color = (0, 0, 0))
+            return (final_tags, pil2tensor(empty_image),)    
+        
+        
+class PromptRemove:
+    # given a prompt, split it by separator and remove the words in the list based on the input list separated by comma
+    # if the word in the list contains a * then it will remove all the words that contain that word
+    def __init__(self):
+        pass
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "prompt": ("STRING", {}),
+                    "separator": ("STRING", {"default": ","}),
+                    "remove_tags": ("STRING", {"default": ""}),
+                    }
+                }
+        
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "prompt_remove"
+    CATEGORY = "Ranbooru Nodes"
+    
+    def prompt_remove(self, prompt, separator, remove_tags):
+        tags = prompt.split(separator)
+        if ',' in remove_tags:
+            remove_tags = remove_tags.split(',')
+        else:
+            remove_tags = [remove_tags]
+        for bad_tag in remove_tags:
+            if '*' in bad_tag:
+                tags = [tag for tag in tags if bad_tag.replace('*','') not in tag]
+            else:
+                tags = [tag for tag in tags if tag != bad_tag]
+        return (separator.join(tags),)
     
 class RandomPicturePath:
     # given a path, return a random picture (png,jpg,jpeg) from that path as a string
@@ -516,6 +616,8 @@ NODE_CLASS_MAPPINGS = {
     "PromptLimit": PromptLimit,
     "PromptRandomWeight": PromptRandomWeight,
     "PromptBackground": PromptBackground,
+    "PromptRemove": PromptRemove,
+    "RanbooruURL": RanbooruURL,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -526,4 +628,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "PromptLimit": "Prompt Limit",
     "PromptRandomWeight": "Prompt Random Weight",
     "PromptBackground": "Prompt Background",
+    "PromptRemove": "Prompt Remove",
+    "RanbooruURL": "Ranbooru URL",
 }
