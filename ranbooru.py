@@ -552,7 +552,7 @@ class PromptRandomWeight:
         if order == 'Random':
             # apply weights to random words in the list
             # these should not be always the first words
-            random_words = random.sample(words, max_weight_tags)
+            random_words = random.sample([word for word in words if "(" not in word], max_weight_tags)
             for i in range(max_weight_tags):
                 words[words.index(random_words[i])] = f"({words[words.index(random_words[i])]}:{round(random.uniform(min_weight_value,max_weight_value),1)})"
         else:
