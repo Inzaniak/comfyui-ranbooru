@@ -13,7 +13,7 @@ This node will get a random set of tags from boorus pictures.
 Parameters:
 - `Booru`: The booru to get the tags from.
 - `Tags`: The tags to search for.
-- `remove_tags`: The tags to remove from the search.
+- ~~`remove_tags`: The tags to remove from the search.~~ replaced as a new node
 - ~~`max_tags`: The maximum amount of tags to get.~~ replaced as a new node
 - `rating`: The mature rating of the picture.
 - `change_color`: Change this if you want a colored or a black and white picture.
