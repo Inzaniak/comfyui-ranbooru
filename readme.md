@@ -65,6 +65,16 @@ The `PromptRemove` function is used to remove specified words from a given promp
 - `prompt`: A string that represents the prompt to be processed.
 - `words_to_remove`: A list of strings that represents the words to be removed from the prompt.
 
+### LockSeed
+The `LockSeed` node is used to lock the seed for the random number generator. This is useful when you want to generate the same random numbers across different nodes. 
+
+- `use_last`: Lock the seed to the last seed used.
+
+### TimestampFileName
+The `TimestampFileName` node is used to generate a timestamp-based file name. The file name is generated based on the current date and time.
+
+- `filename`: A string that represents the prefix to be added to the file name.
+
 ## Found an issue?  
 If you found an issue with the extension, please report it in the issues section of this repository.  
 
