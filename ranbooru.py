@@ -1,3 +1,4 @@
+import datetime
 import requests
 import random
 from typing import Literal
@@ -469,6 +470,9 @@ class RandomPicturePath:
 class PromptMix:
     def __init__(self):
         self.last_prompt = ''
+        
+    def IS_CHANGED(self, **kwargs):
+        return float('nan')
     
     @classmethod
     def INPUT_TYPES(cls):
@@ -605,8 +609,57 @@ class PromptBackground:
         
         return (final_prompt,)
     
+class LockSeed:
+    """Returns a random seed and stores it in self.prev_seed. If user selects 'use_last' it will return the same seed as before."""
+    def __init__(self):
+        self.prev_seed = None
     
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "use_last": ("BOOLEAN", {"default": False}),
+                    }
+                }
+        
+    def IS_CHANGED(self, **kwargs):
+        return float('nan')
+    
+    RETURN_TYPES = ("INT",)
+    FUNCTION = "lock_seed"
+    CATEGORY = "Ranbooru Nodes"
+    
+    def lock_seed(self, use_last):
+        if use_last and self.prev_seed != None:
+            return (self.prev_seed,)
+        else:
+            seed = random.randint(0,1000000000)
+            self.prev_seed = seed
+            return (seed,)
 
+class TimestampFileName:
+    """Given a filename input, returns a filename with a timestamp appended to it."""
+    def __init__(self):
+        pass
+    
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+                    "filename": ("STRING", {"multiline": False, "default": ""}),
+                    }
+                }
+        
+    def IS_CHANGED(self, **kwargs):
+        return float('nan')
+        
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "timestamp_filename"
+    CATEGORY = "Ranbooru Nodes"
+    
+    def timestamp_filename(self, filename):
+        now = datetime.datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
+        return (f"{filename}_{timestamp}",)
+   
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
@@ -618,6 +671,8 @@ NODE_CLASS_MAPPINGS = {
     "PromptBackground": PromptBackground,
     "PromptRemove": PromptRemove,
     "RanbooruURL": RanbooruURL,
+    "LockSeed": LockSeed,
+    "TimestampFileName": TimestampFileName,
 }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -630,4 +685,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "PromptBackground": "Prompt Background",
     "PromptRemove": "Prompt Remove",
     "RanbooruURL": "Ranbooru URL",
+    "LockSeed": "Lock Seed",
+    "TimestampFileName": "Timestamp Filename",
 }
