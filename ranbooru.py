@@ -21,10 +21,10 @@ class Booru():
         self.booru_url = booru_url
         self.headers = {'user-agent': 'my-app/0.0.1'}
         
-    def get_data(self,add_tags,max_pages=10, id=''):
+    def get_data(self,add_tags,max_pages, id=''):
         pass
     
-    def get_post(self,add_tags,max_pages=10, id=''):
+    def get_post(self,add_tags,max_pages, id=''):
         pass
     
 class Gelbooru(Booru):
@@ -33,7 +33,7 @@ class Gelbooru(Booru):
         super().__init__('gelbooru', f'https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={POST_AMOUNT}')
         self.fringeBenefits = fringe_benefits
 
-    def get_data(self, add_tags, max_pages=10, id=''):
+    def get_data(self, add_tags, max_pages, id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&pid={random.randint(0,max_pages)}{id}{add_tags}"
@@ -44,7 +44,7 @@ class Gelbooru(Booru):
         data = res.json()
         return data
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         return self.get_data(add_tags, max_pages, "&id="+id)
     
     
@@ -53,7 +53,7 @@ class XBooru(Booru):
     def __init__(self):
         super().__init__('xbooru', f'https://xbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10, id=''):
+    def get_data(self, add_tags, max_pages, id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&pid={random.randint(0,max_pages)}{id}{add_tags}"
@@ -63,7 +63,7 @@ class XBooru(Booru):
             post['file_url'] = f"https://xbooru.com/images/{post['directory']}/{post['image']}"
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         return self.get_data(add_tags, max_pages, "&id="+id)
     
 class Rule34(Booru):
@@ -71,7 +71,7 @@ class Rule34(Booru):
     def __init__(self):
         super().__init__('rule34', f'https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10,id=''):
+    def get_data(self, add_tags, max_pages,id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&pid={random.randint(0,max_pages)}{id}{add_tags}"
@@ -79,7 +79,7 @@ class Rule34(Booru):
         data = res.json()
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         return self.get_data(add_tags, max_pages, "&id="+id)
     
 class Safebooru(Booru):
@@ -87,7 +87,7 @@ class Safebooru(Booru):
     def __init__(self):
         super().__init__('safebooru', f'https://safebooru.org/index.php?page=dapi&s=post&q=index&json=1&limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10,id=''):
+    def get_data(self, add_tags, max_pages,id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&pid={random.randint(0,max_pages)}{id}{add_tags}"
@@ -97,7 +97,7 @@ class Safebooru(Booru):
             post['file_url'] = f"https://safebooru.org/images/{post['directory']}/{post['image']}"
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         return self.get_data(add_tags, max_pages, "&id="+id)
     
 class Konachan(Booru):
@@ -105,7 +105,7 @@ class Konachan(Booru):
     def __init__(self):
         super().__init__('konachan', f'https://konachan.com/post.json?limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10,id=''):
+    def get_data(self, add_tags, max_pages,id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&page={random.randint(0,max_pages)}{id}{add_tags}"
@@ -113,7 +113,7 @@ class Konachan(Booru):
         data = res.json()
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         raise Exception("Konachan does not support post IDs")
     
 class Yandere(Booru):
@@ -121,7 +121,7 @@ class Yandere(Booru):
     def __init__(self):
         super().__init__('yande.re', f'https://yande.re/post.json?limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10,id=''):
+    def get_data(self, add_tags, max_pages,id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&page={random.randint(0,max_pages)}{id}{add_tags}"
@@ -129,7 +129,7 @@ class Yandere(Booru):
         data = res.json()
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         raise Exception("Yande.re does not support post IDs")
     
 class AIBooru(Booru):
@@ -137,7 +137,7 @@ class AIBooru(Booru):
     def __init__(self):
         super().__init__('AIBooru', f'https://aibooru.online/posts.json?limit={POST_AMOUNT}')
                 
-    def get_data(self, add_tags, max_pages=10,id=''):
+    def get_data(self, add_tags, max_pages,id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&page={random.randint(0,max_pages)}{id}{add_tags}"
@@ -147,7 +147,7 @@ class AIBooru(Booru):
             post['tags'] = post['tag_string']
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         raise Exception("AIBooru does not support post IDs")
     
 class Danbooru(Booru):
@@ -155,7 +155,7 @@ class Danbooru(Booru):
     def __init__(self):
         super().__init__('danbooru', f'https://danbooru.donmai.us/posts.json?limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10, id=''):
+    def get_data(self, add_tags, max_pages, id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&page={random.randint(0,max_pages)}{id}{add_tags}"
@@ -165,7 +165,7 @@ class Danbooru(Booru):
             post['tags'] = post['tag_string']
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         self.booru_url = f"https://danbooru.donmai.us/posts/{id}.json"
         res = requests.get(self.booru_url, headers=self.headers)
         data = res.json()
@@ -178,7 +178,7 @@ class e621(Booru):
     def __init__(self):
         super().__init__('danbooru', f'https://e621.net/posts.json?limit={POST_AMOUNT}')
         
-    def get_data(self, add_tags, max_pages=10, id=''):
+    def get_data(self, add_tags, max_pages, id=''):
         if id:
             add_tags = ''
         self.booru_url = f"{self.booru_url}&page={random.randint(0,max_pages)}{id}{add_tags}"
@@ -193,7 +193,7 @@ class e621(Booru):
             post['score'] = post['score']['total']
         return {'post': data}
     
-    def get_post(self, add_tags, max_pages=10, id=''):
+    def get_post(self, add_tags, max_pages, id=''):
         self.get_data(add_tags, max_pages, "&id="+id)
 
 BOORUS = ['gelbooru', 'rule34', 'safebooru', 'danbooru', 'konachan', 'yande.re', 'aibooru', 'xbooru', 'e621']
@@ -243,6 +243,7 @@ class Ranbooru:
                
         return {"required": {       
                     "booru": (BOORUS, {"default": "gelbooru"}),
+					"max_pages": ("INT", {"default": 0, "min": 0, "max": 100, "step": 1, "display": "number"}),
                     "tags": ("STRING", {"multiline": False, "default": ""}),
                     "rating": (["All","Safe","Sensitive","Questionable","Explicit"], {"default": "All"}),
                     "change_color": (["Default","Colored","Limited Palette","Monochrome"], {"default": "Default"}),
@@ -258,8 +259,7 @@ class Ranbooru:
     def IS_CHANGED(self, **kwargs):
         return float('nan')
 
-    def ranbooru(self, booru, tags, rating, change_color, use_last_prompt, return_picture):
-
+    def ranbooru(self, booru, max_pages, tags, rating, change_color, use_last_prompt, return_picture):
         booru_apis = {
                 'gelbooru': Gelbooru(),
                 'rule34': Rule34(),
@@ -289,8 +289,7 @@ class Ranbooru:
                 add_tags = '&tags=-animated'
             if rating != 'All':
                 add_tags += f'+rating:{RATINGS[booru][rating]}'
-
-            data = api_url.get_data(add_tags, 100)
+            data = api_url.get_data(add_tags, max_pages)
             random_post = data['post'][random.randint(0,len(data['post'])-1)]
             clean_tags = random_post['tags'].replace('(','\(').replace(')','\)')
             temp_tags = clean_tags.split(' ')
@@ -304,7 +303,9 @@ class Ranbooru:
             final_tags = ','.join([tag for tag in temp_tags if tag not in bad_tags])
             self.last_prompt = final_tags
             self.file_url = random_post['file_url']
-        
+            print(api_url.booru_url)
+            print(self.file_url)
+
         if return_picture:
             if use_last_prompt:
                 if self.file_url == img_url and self.image != None:
