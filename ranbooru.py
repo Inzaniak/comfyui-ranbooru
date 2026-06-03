@@ -67,10 +67,10 @@ class Booru():
         self.booru = booru
         self.booru_url = booru_url
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         pass
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         pass
 
 class Gelbooru(Booru):
@@ -83,7 +83,7 @@ class Gelbooru(Booru):
         )
         self.fringeBenefits = fringe_benefits
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
 
@@ -94,15 +94,25 @@ class Gelbooru(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         if self.fringeBenefits:
             res = sess.get(self.booru_url, cookies={"fringeBenefits": "yup"})
         else:
             res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         return data
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
-        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id)
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
+        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id, api_key)
 
 class XBooru(Booru):
     def __init__(self):
@@ -113,7 +123,7 @@ class XBooru(Booru):
             f"https://xbooru.com/index.php?api_key={APIKEY}&user_id={APIID}&page=dapi&s=post&q=index&json=1",
         )
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -123,16 +133,26 @@ class XBooru(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         for post in data:
             post["file_url"] = (
                 f"https://xbooru.com/images/{post['directory']}/{post['image']}"
             )
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
-        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id)
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
+        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id, api_key)
 
 class Rule34(Booru):
     def __init__(self):
@@ -143,7 +163,7 @@ class Rule34(Booru):
             f"https://api.rule34.xxx/index.php?api_key={APIKEY}&user_id={APIID}&page=dapi&s=post&q=index&json=1",
         )
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -153,12 +173,22 @@ class Rule34(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
-        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id)
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
+        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id, api_key)
 
 class Safebooru(Booru):
     def __init__(self):
@@ -169,7 +199,7 @@ class Safebooru(Booru):
             f"https://safebooru.org/index.php?api_key={APIKEY}&user_id={APIID}&page=dapi&s=post&q=index&json=1",
         )
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -178,17 +208,27 @@ class Safebooru(Booru):
 
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url) 
+
+        if api_key:
+            self.booru_url += api_key
        
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         for post in data:
             post["file_url"] = (
                 f"https://safebooru.org/images/{post['directory']}/{post['image']}"
             )
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
-        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id)
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
+        return self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id, api_key)
 
 class Konachan(Booru):
     def __init__(self):
@@ -198,7 +238,7 @@ class Konachan(Booru):
             "konachan", f"https://konachan.com/post.json?api_key={APIKEY}&user_id={APIID}"
         )
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -208,11 +248,21 @@ class Konachan(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         raise Exception("Konachan does not support post IDs")
 
 class Yandere(Booru):
@@ -221,7 +271,7 @@ class Yandere(Booru):
         APIID=userkeys.get('yande.re_id', '')
         super().__init__("yande.re", f"https://yande.re/post.json?api_key={APIKEY}&user_id={APIID}")
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -231,11 +281,21 @@ class Yandere(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         raise Exception("Yande.re does not support post IDs")
 
 class AIBooru(Booru):
@@ -246,7 +306,7 @@ class AIBooru(Booru):
             "AIBooru", f"https://aibooru.online/posts.json?api_key={APIKEY}&login={APIID}"
         )
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -256,13 +316,23 @@ class AIBooru(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         for post in data:
             post["tags"] = post["tag_string"]
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         raise Exception("AIBooru does not support post IDs")
 
 class Danbooru(Booru):
@@ -273,7 +343,7 @@ class Danbooru(Booru):
             "danbooru", f"https://danbooru.donmai.us/posts.json?api_key={APIKEY}&login={APIID}"
         )
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -283,16 +353,35 @@ class Danbooru(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         for post in data:
             post["tags"] = post["tag_string"]
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         self.booru_url = f"https://danbooru.donmai.us/posts/{id}.json"
+        if api_key:
+            self.booru_url += api_key
         res = sess.get(self.booru_url)
-        data = res.json()
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
         data["tags"] = data["tag_string"]
         data = {"post": [data]}
         return data
@@ -303,7 +392,7 @@ class e621(Booru):
         APIID=userkeys.get('e621_id', '')
         super().__init__("danbooru", f"https://e621.net/posts.json?api_key={APIKEY}&login={APIID}")
 
-    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
+    def get_data(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
         if id:
             add_tags = ""
         self.booru_url = (
@@ -313,8 +402,19 @@ class e621(Booru):
         # Troubleshooting line to check the URL being requested
         #print(self.booru_url)
 
+        if api_key:
+            self.booru_url += api_key
+
         res = sess.get(self.booru_url)
-        data = res.json()["posts"]
+        try:
+            data = res.json()
+        except requests.exceptions.JSONDecodeError:
+            print(f"[Ranbooru] API request failed!")
+            print(f"[Ranbooru] URL: {self.booru_url}")
+            print(f"[Ranbooru] HTTP Status: {res.status_code}")
+            print(f"[Ranbooru] Response: {res.text[:500]}")
+            raise Exception(f"Booru API returned invalid response (HTTP {res.status_code}). Check console for response details.")
+        data = data["posts"]
         for post in data:
             temp_tags = []
             sublevels = ["general", "artist", "copyright", "character", "species"]
@@ -325,8 +425,8 @@ class e621(Booru):
             post["file_url"] = post["file"]["url"]
         return {"post": data}
 
-    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id=""):
-        self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id)
+    def get_post(self, add_tags, max_pages, posts_per_page, rpage, seed, id="", api_key=""):
+        self.get_data(add_tags, max_pages, posts_per_page, 0, seed, "&id=" + id, api_key)
 
 BOORUS = [
     "gelbooru",
@@ -441,6 +541,7 @@ class Ranbooru:
                 ),
                 "use_last_prompt": ("BOOLEAN", {"default": False}),
                 "return_picture": ("BOOLEAN", {"default": False}),
+                "api_key": ("STRING", {"multiline": False, "default": ""}),
             }
         }
 
@@ -472,7 +573,10 @@ class Ranbooru:
         change_color,
         use_last_prompt,
         return_picture,
+        api_key,
     ):
+        if not api_key:
+            raise Exception("api_key is required. The booru API now requires an API key. Please paste your key in the api_key field.")
         booru_apis = {
             "gelbooru": Gelbooru(),
             "rule34": Rule34(),
@@ -547,7 +651,8 @@ class Ranbooru:
         api_url = ""
         random_post = {"preview_url": ""}
         data = {"post": [{"tags": ""}]}
-        if use_last_prompt and self.last_prompt != "":
+        cached = use_last_prompt and self.last_prompt != ""
+        if cached:
             final_tags = self.last_prompt
             img_url = self.file_url
         else:
@@ -563,7 +668,7 @@ class Ranbooru:
             
             #Using the max page setting and seed, pull a random page
             rpage = random_num(0, max_pages, seed)
-            data = api_url.get_data(add_tags, max_pages, posts_per_page, rpage, seed)
+            data = api_url.get_data(add_tags, max_pages, posts_per_page, rpage, seed, api_key=api_key)
             rpost = random_num(0, len(data["post"]) - 1, seed)
 
             random_post = data["post"][rpost]
@@ -585,7 +690,7 @@ class Ranbooru:
             print(self.file_url)
 
         if return_picture:
-            if use_last_prompt:
+            if cached:
                 if self.file_url == img_url and self.image != None:
                     img = self.image
             else:
@@ -630,6 +735,7 @@ class RanbooruURL:
                 "booru": (BOORUS_URL, {"default": "gelbooru"}),
                 "url": ("STRING", {"multiline": False, "default": ""}),
                 "return_picture": ("BOOLEAN", {"default": False}),
+                "api_key": ("STRING", {"multiline": False, "default": ""}),
             }
         }
 
@@ -646,7 +752,9 @@ class RanbooruURL:
     FUNCTION = "ranbooru_url"
     CATEGORY = "Ranbooru Nodes"
 
-    def ranbooru_url(self, booru, url, return_picture):
+    def ranbooru_url(self, booru, url, return_picture, api_key):
+        if not api_key:
+            raise Exception("api_key is required. The booru API now requires an API key. Please paste your key in the api_key field.")
         booru_apis = {
             "gelbooru": Gelbooru(),
             "rule34": Rule34(),
@@ -733,7 +841,7 @@ class RanbooruURL:
             else:
                 raise Exception("Invalid URL")
 
-        data = api_url.get_data(add_tags, 100, 100, 0, 0)
+        data = api_url.get_data(add_tags, 100, 100, 0, 0, api_key=api_key)
         random_post = data["post"][0]
         clean_tags = random_post["tags"].replace("(", "\\(").replace(")", "\\)")
         temp_tags = clean_tags.split(" ")
